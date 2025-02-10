@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Search Results for: "{{ query }}"</h1>
+        
+        <h3 class="mt-4">Metrics</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for metric, value in metrics.items() %}
+                    <tr>
+                        <td>{{ metric }}</td>
+                        <td>{{ "%.4f"|format(value) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 class="mt-4">Top Results</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Document ID</th>
+                    <th>Score</th>
+                    <th>Preview</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc_id, score in results %}
+                    <tr>
+                        <td>{{ doc_id }}</td>
+                        <td>{{ "%.4f"|format(score) }}</td>
+                        <td>{{ documents[doc_id][:200] }}...</td>  <!-- Show preview of document text -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 class="mt-4">Score Distribution</h3>
+        <canvas id="scoreChart"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var ctx = document.getElementById('scoreChart').getContext('2d');
+
+            var docIDs = [{% for doc_id, _ in results %} "{{ doc_id }}", {% endfor %}];
+            var scores = [{% for _, score in results %} {{ score }}, {% endfor %}];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: docIDs,
+                    datasets: [{
+                        label: 'Document Scores',
+                        data: scores,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
